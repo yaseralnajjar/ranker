@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'core',
     'users',
 
+    'adminsortable2',
+    'django_admin_listfilter_dropdown',
     'corsheaders',
     'rest_framework',
     'django_filters',
