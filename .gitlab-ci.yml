@@ -1,0 +1,50 @@
+# Reference: https://www.exclamationlabs.com/blog/continuous-deployment-to-npm-using-gitlab-ci/
+
+# GitLab uses docker in the background, so we need to specify the 
+# image versions. This is useful because we're freely to use
+# multiple node versions to work with it. They come from the docker
+# repo.
+image: docker:19.03.5
+
+variables:
+  # When using dind service we need to instruct docker, to talk with the
+  # daemon started inside of the service. The daemon is available with
+  # a network connection instead of the default /var/run/docker.sock socket.
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+  #
+  # Note that if you're using Kubernetes executor, the variable should be set to
+  # tcp://localhost:2375 because of how Kubernetes executor connects services
+  # to the job container
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  DOCKER_DRIVER: overlay2
+  HOST_ENV: production
+  DOCKER_HOST: tcp://docker:2375
+
+
+
+services:
+- docker:dind
+
+# You specify the stages. Those are the steps that GitLab will go through 
+# Order matters. 
+stages:
+  - deploy
+
+
+deploy-dev:
+  only:
+    - develop
+  stage: deploy
+  before_script:
+    - chmod +x ./setup_env.sh
+    - touch api.env spa.env db.env
+    - /bin/sh setup_env.sh
+  script:
+    - chmod og= $ID_RSA
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "rm -rf ~/portfoliopro"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "git clone ${CI_REPOSITORY_URL} portfoliopro"
+    - scp -i $ID_RSA -o StrictHostKeyChecking=no *.env $SERVER_USER@$SERVER_IP:~/portfoliopro
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose -f ~/portfoliopro/docker-compose.production.yml up -d --build"

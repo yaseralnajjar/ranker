@@ -1,0 +1,17 @@
+.vscode/
+
+# backend
+env/
+venv/
+media/
+*.pyc
+db.sqlite3
+dev_secrets.py
+
+# frontend
+node_modules/
+build/
+.eslintcache
+
+*.env
+to-do.txt

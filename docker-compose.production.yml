@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - /var/my-db:/var/lib/postgresql/data/
+    env_file:
+      - ./db.env
+
+  redis:
+    image: redis:alpine
+
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.api.prod
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./api.env
+    command: sh -c "supervisord --nodaemon --configuration /etc/supervisord.conf"
+    volumes:
+      - /var/academy-media:/usr/src/app/media
+    links:
+      - db
+      - redis
+
+  spa:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.spa.prod
+      args:
+        API_BASE_URL: https://ranker-api.yaseralnajjar.com
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./spa.env
+    command: npm run serve
+
+  nginx:
+    image: nginx:1.15.3-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./conf.d/ranker.conf:/etc/nginx/conf.d/ranker.conf
+      - /var/ranker-media:/var/ranker-media
+    depends_on:
+      - api
+      - spa
