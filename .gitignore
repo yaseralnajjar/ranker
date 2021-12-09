@@ -1,4 +1,7 @@
-.vscode/
+.vscode/*
+backend/.vscode/*
+!.vscode/settings.json
+!backend/.vscode/settings.json
 
 # backend
 env/
