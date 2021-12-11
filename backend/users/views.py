@@ -1,20 +1,18 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
+
+from rest_framework import status
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-
-from django.utils.decorators import method_decorator
-from django.views.decorators.debug import sensitive_post_parameters
-from django.contrib.auth.signals import user_logged_in
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import SignInSerializer, UserSerializer
 
 sensitive_post_parameters_m = method_decorator(
-    sensitive_post_parameters(
-        'password', 'old_password', 'new_password1', 'new_password2'
-    )
+    sensitive_post_parameters('password', 'old_password', 'new_password1', 'new_password2')
 )
 
 User = get_user_model()
@@ -40,10 +38,13 @@ class SignInView(GenericAPIView):
 
         user_logged_in.send(sender=user.__class__, request=request, user=user)
 
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserListView(ListAPIView):

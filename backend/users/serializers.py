@@ -1,8 +1,7 @@
-from rest_framework import serializers, exceptions
-
+from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
+
+from rest_framework import exceptions, serializers
 
 User = get_user_model()
 
@@ -41,7 +40,7 @@ class SignInSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = CustomChoiceField(User.ROLES_CHOICES)
+    role = CustomChoiceField(User.Roles)
 
     class Meta:
         model = User
