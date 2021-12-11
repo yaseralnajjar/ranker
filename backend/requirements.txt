@@ -41,4 +41,3 @@ psycopg2-binary==2.9.2
 # django 3rd party apps
 django_admin_list_filter_dropdown==1.0.3
 django-admin-sortable2==1.0.2
-django-jsonfield-backport==1.0.4
